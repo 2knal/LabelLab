@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { Dimmer, Loader, Button, Form, Icon } from 'semantic-ui-react'
-import { fetchLabels, createLabel, deleteLabel } from '../../../actions/index'
+import { Dimmer, Loader, Button, Form } from 'semantic-ui-react'
+import { fetchLabels, createLabel, deleteLabel, editLabel } from '../../../actions/index'
 import LabelItem from './labelItem.js'
 import '../css/labelItem.css'
 
@@ -49,6 +49,15 @@ class LabelIndex extends Component {
     })
     fetchLabels(project.projectId)
   }
+  handleUpdate = value => {
+    const { project, editLabel, fetchLabels } = this.props
+    const data = {
+      name: value.name,
+      type: value.type,
+      projectId: value.project
+    }
+    editLabel(value._id, data, fetchLabels(project.projectId))
+  }
   handleDelete = value => {
     const { project, deleteLabel, fetchLabels } = this.props
     deleteLabel(value._id, fetchLabels(project.projectId))
@@ -67,12 +76,18 @@ class LabelIndex extends Component {
             <Loader indeterminate>Removing Label :)</Loader>
           </Dimmer>
         ) : null}
+        {actions.isupdating ? (
+          <Dimmer active>
+            <Loader indeterminate>Updating Label :)</Loader>
+          </Dimmer>
+        ) : null}
         {labels !== undefined &&
           labels.map((label, index) => (
             <LabelItem
               value={label}
               key={index}
               onChange={this.onChange}
+              onUpdate={this.handleUpdate}
               onDelete={this.handleDelete}
             />
           ))}
@@ -117,7 +132,8 @@ LabelIndex.propTypes = {
   labels: PropTypes.array,
   fetchLabels: PropTypes.func,
   createLabel: PropTypes.func,
-  deleteLabel: PropTypes.func
+  deleteLabel: PropTypes.func,
+  editLabel: PropTypes.func
 }
 
 const mapStateToProps = state => {
@@ -138,6 +154,9 @@ const mapDispatchToProps = dispatch => {
     },
     deleteLabel: (labelId, callback) => {
       return dispatch(deleteLabel(labelId, callback))
+    },
+    editLabel: (labelId, data, callback) => {
+      return dispatch(editLabel(labelId, data, callback))
     }
   }
 }
